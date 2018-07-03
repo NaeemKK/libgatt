@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/gattlib.h
+stdint.h
+-
+bluetooth/bluetooth.h
+-
+bluetooth/sdp.h
+-
+bluetooth/sdp_lib.h
+-
+
+/root/gattlib/examples/nordic_uart/nordic_uart.c
+assert.h
+-
+stdio.h
+-
+stdlib.h
+-
+signal.h
+-
+gattlib.h
+/root/gattlib/examples/nordic_uart/gattlib.h
+

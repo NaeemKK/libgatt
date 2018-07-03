@@ -1,0 +1,3 @@
+/usr/include/gattlib.h
+/usr/lib/pkgconfig/gattlib.pc
+/usr/lib/libgattlib.so

@@ -1,0 +1,1 @@
+/usr/bin/cc   -Wall   CMakeFiles/ble_scan.dir/ble_scan.c.o  -o ble_scan  -L/root/gattlib/build/dbus -rdynamic ../../dbus/libgattlib.so -lglib-2.0 -lgattlib -lglib-2.0 -lpcre -lpthread -lgio-2.0 -lgobject-2.0 -lglib-2.0 -Wl,-rpath,/root/gattlib/build/dbus 

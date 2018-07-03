@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/gattlib.h
+stdint.h
+-
+bluetooth/bluetooth.h
+-
+bluetooth/sdp.h
+-
+bluetooth/sdp_lib.h
+-
+
+/root/gattlib/examples/discover/discover.c
+stdio.h
+-
+stdlib.h
+-
+gattlib.h
+/root/gattlib/examples/discover/gattlib.h
+
