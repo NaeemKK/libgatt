@@ -81,6 +81,7 @@ typedef struct _gatt_connection_t {
 
 typedef void (*gattlib_discovered_device_t)(const char* addr, const char* name);
 typedef void (*gatt_connect_cb_t)(gatt_connection_t* connection);
+typedef void (*gatt_disconnect_cb_t)(gatt_connection_t* connection);
 typedef void* (*gatt_read_cb_t)(const void* buffer, size_t buffer_len);
 
 
@@ -109,6 +110,7 @@ gatt_connection_t *gattlib_connect_async(const char *src, const char *dst,
 				uint8_t dest_type, gattlib_bt_sec_level_t sec_level, int psm, int mtu,
 				gatt_connect_cb_t connect_cb);
 
+int gattlib_register_disconnect(gatt_connection_t* connection, gatt_disconnect_cb_t disconnect_cb);
 int gattlib_disconnect(gatt_connection_t* connection);
 int gattlib_rssi(gatt_connection_t* connection);
 typedef struct {

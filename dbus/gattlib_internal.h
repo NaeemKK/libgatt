@@ -40,6 +40,9 @@
 typedef struct {
 	char* device_object_path;
 	OrgBluezDevice1* device;
+	// keep a disconnection pointer just in case
+	gatt_disconnect_cb_t disconnect_cb;
+	gulong handler_id
 } gattlib_context_t;
 
 #endif

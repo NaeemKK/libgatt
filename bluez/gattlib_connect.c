@@ -327,6 +327,30 @@ static gboolean connection_timeout(gpointer user_data) {
 	return FALSE;
 }
 
+static gboolean channel_watcher(GIOChannel *chan, GIOCondition cond,
+				gpointer user_data)
+{
+	//disconnect_io();
+	gatt_connection_t* connection = user_data;
+	if (connection != NULL)
+	{
+		gattlib_context_t* conn_context = connection->context;
+		gatt_disconnect_cb_t *disconnect_cb = conn_context->disconnect_cb;		
+		if (disconnect_cb != NULL)
+		{
+			disconnect_cb(connection);
+		}
+	}
+	return FALSE;
+}
+
+int gattlib_register_disconnect(gatt_connection_t* connection, gatt_disconnect_cb_t *disconnect_cb)
+{
+	gattlib_context_t* conn_context = connection->context;
+	g_io_add_watch(conn_context->io, G_IO_HUP, channel_watcher, NULL);
+	return 0;
+}
+
 /**
  * @param src		Local Adaptater interface
  * @param dst		Remote Bluetooth address

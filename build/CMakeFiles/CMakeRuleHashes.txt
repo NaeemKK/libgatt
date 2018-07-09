@@ -1,6 +1,0 @@
-# Hashes of file build rules.
-8650f3f6b4ccf7e01cbedff45d930c35 dbus/org-bluez-adaptater1.c
-7d00415699a7ed55ab1cae6c5fcf1529 dbus/org-bluez-device1.c
-15d33ad47873b829ecc0295b2ff67cdc dbus/org-bluez-gattcharacteristic1.c
-087b840eeae00b7113d2303e172a41e4 dbus/org-bluez-gattdescriptor1.c
-a46666b0304d4236c96e168f7be42578 dbus/org-bluez-gattservice1.c

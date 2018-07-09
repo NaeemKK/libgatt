@@ -52,6 +52,9 @@ typedef struct {
 	// We keep a list of characteristics to make the correspondence handle/UUID.
 	gattlib_characteristic_t* characteristics;
 	int                       characteristic_count;
+	
+	// keep a disconnection pointer just in case
+	 gatt_disconnect_cb_t *disconnect_cb;
 } gattlib_context_t;
 
 extern struct gattlib_thread_t g_gattlib_thread;

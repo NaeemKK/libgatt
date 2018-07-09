@@ -1,1 +1,0 @@
-/usr/bin/cc   -Wall   CMakeFiles/discover.dir/discover.c.o  -o discover  -L/root/gattlib/build/dbus -rdynamic ../../dbus/libgattlib.so -lglib-2.0 -lgattlib -lglib-2.0 -lpcre -lpthread -lgio-2.0 -lgobject-2.0 -lglib-2.0 -Wl,-rpath,/root/gattlib/build/dbus 
