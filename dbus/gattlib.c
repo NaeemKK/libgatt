@@ -204,7 +204,7 @@ gboolean on_handle_device_property_change_connection(
 	gatt_connection_t* connection = user_data;
 	// [TODO] add null check also check that this connection is still connected
 	gattlib_context_t* conn_context = connection->context;
-	printf("[GATTLIB]Entered  %s\n",__func__);
+	//printf("[GATTLIB]Entered  %s\n",__func__);
 	// Retrieve 'Value' from 'arg_changed_properties'
 	if (g_variant_n_children (arg_changed_properties) > 0) {
 		GVariantIter *iter;
@@ -213,32 +213,32 @@ gboolean on_handle_device_property_change_connection(
 
 		g_variant_get (arg_changed_properties, "a{sv}", &iter);
 		while (g_variant_iter_loop (iter, "{&sv}", &key, &value)) {
-			printf("[GATTLIB]Value changed = %s\n", key);
+			//printf("[GATTLIB]Value changed = %s\n", key);
 			//printf("[GATTLIB]Value changed type= %s", g_variant_get_type_string (value));
 			int case_compare = strcasecmp (key, "Connected");
-			printf("[GATTLIB]Case compare = %d\n", case_compare);
+			//printf("[GATTLIB]Case compare = %d\n", case_compare);
 
 			if ((case_compare  == 0)) { //0 &&
 				gboolean connected_value = g_variant_get_boolean (value);
-				printf("[GATTLIB]Value changed value= %d\n", connected_value);
+				//printf("[GATTLIB]Value changed value= %d\n", connected_value);
 				if (!connected_value && conn_context->disconnect_cb != NULL ){
 					printf("[GATTLIB]Value changed calling callback %d\n", connected_value);
 					conn_context->disconnect_cb(connection);
 				}
 				else
 				{
-					printf("[GATTLIB]No callback %d\n", connected_value);
+					//printf("[GATTLIB]No callback %d\n", connected_value);
 				}
 			//	g_main_loop_quit(loop);
 			//	break;
 			}
 			else
 			{
-				printf("[GATTLIB]Value changed comparison failed %s\n", key);
+				//printf("[GATTLIB]Value changed comparison failed %s\n", key);
 			}
 		}
 	}
-	printf("[GATTLIB]left  %s\n",__func__);
+	//printf("[GATTLIB]left  %s\n",__func__);
 
 	return TRUE;
 }
@@ -259,11 +259,11 @@ int gattlib_register_disconnect(gatt_connection_t* connection, gatt_disconnect_c
 				connection);
 		if (conn_context->handler_id < 1)
 		{
-			printf("[GATTLIB]Invalid handler Id\n");
+			//printf("[GATTLIB]Invalid handler Id\n");
 		}
 		else
 		{
-			printf("[GATTLIB]handler Id = = %d device = %p\n", conn_context->handler_id, conn_context->device );
+			//printf("[GATTLIB]handler Id = = %d device = %p\n", conn_context->handler_id, conn_context->device );
 		}
 	}
 	return 0;
@@ -291,7 +291,7 @@ gatt_connection_t *gattlib_connect(const char *src, const char *dst,
 	} else {
 		adapter_name = "hci0";
 	}
-	printf("[GATTLIB]gattlib_connect\n");
+	//printf("[GATTLIB]gattlib_connect\n");
 	// Transform string from 'DA:94:40:95:E0:87' to 'dev_DA_94_40_95_E0_87'
 	strncpy(device_address_str, dst, sizeof(device_address_str));
 	for (i = 0; i < strlen(device_address_str); i++) {
@@ -395,7 +395,7 @@ int gattlib_disconnect(gatt_connection_t* connection) {
 	gattlib_context_t* conn_context = connection->context;
 	//printf("disconnect2\n");
 	GError *error = NULL;
-	printf("[GATTLIB]disconnecting handler Id = %d device = %p\n", conn_context->handler_id, conn_context->device );
+	//printf("[GATTLIB]disconnecting handler Id = %d device = %p\n", conn_context->handler_id, conn_context->device );
 	g_signal_handler_disconnect (conn_context->device, conn_context->handler_id);
 	org_bluez_device1_call_disconnect_sync(conn_context->device, NULL, &error);
 	//printf("disconnect3\n");
