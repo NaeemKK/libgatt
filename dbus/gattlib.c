@@ -222,7 +222,7 @@ gboolean on_handle_device_property_change_connection(
 				gboolean connected_value = g_variant_get_boolean (value);
 				//printf("[GATTLIB]Value changed value= %d\n", connected_value);
 				if (!connected_value && conn_context->disconnect_cb != NULL ){
-					printf("[GATTLIB]Value changed calling callback %d\n", connected_value);
+					//printf("[GATTLIB]Value changed calling callback %d\n", connected_value);
 					conn_context->disconnect_cb(connection);
 				}
 				else
@@ -1035,6 +1035,74 @@ gboolean on_handle_characteristic_property_change(
 	return TRUE;
 }
 
+/* Given a reference (pointer to pointer) to the head
+   of a list and an int, appends a new node at the end  */
+void append(signal_handler_t** head_ref, gulong handler_id, const uuid_t *uuid, OrgBluezGattCharacteristic1 *characteristic)
+{
+    /* 1. allocate node */
+    signal_handler_t* new_node = (signal_handler_t*) malloc(sizeof(signal_handler_t));
+
+    signal_handler_t *last = *head_ref;  /* used in step 5*/
+
+    /* 2. put in the data  */
+    new_node->handler_id  = handler_id;
+    memcpy(&new_node->uuid, uuid, sizeof(uuid_t));
+    new_node->characteristic = characteristic;
+
+
+    /* 3. This new node is going to be the last node, so make next
+          of it as NULL*/
+    new_node->next = NULL;
+
+    /* 4. If the Linked List is empty, then make the new node as head */
+    if (*head_ref == NULL)
+    {
+       *head_ref = new_node;
+       return;
+    }
+
+    /* 5. Else traverse till the last node */
+    while (last->next != NULL)
+        last = last->next;
+
+    /* 6. Change the next of last node */
+    last->next = new_node;
+    return;
+}
+
+/* Given a reference (pointer to pointer) to the head of a list
+   and a key, deletes the first occurrence of key in linked list */
+signal_handler_t* deleteNode(signal_handler_t **head_ref, const uuid_t *uuid)
+{
+    // Store head node
+	signal_handler_t* temp = *head_ref, *prev;
+
+    // If head node itself holds the key to be deleted
+    if (temp != NULL && gattlib_uuid_cmp(&temp->uuid, uuid) == 0)
+    {
+        *head_ref = temp->next;   // Changed head
+        //free(temp);               // free old head
+        return temp;
+    }
+
+    // Search for the key to be deleted, keep track of the
+    // previous node as we need to change 'prev->next'
+    while (temp != NULL && gattlib_uuid_cmp(&temp->uuid, uuid) != 0)
+    {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    // If key was not present in linked list
+    if (temp == NULL) return NULL;
+
+    // Unlink the node from linked list
+    prev->next = temp->next;
+
+    //free(temp);  // Free memory
+    return temp;
+}
+
 int gattlib_notification_start(gatt_connection_t* connection, const uuid_t* uuid) {
 	gattlib_context_t* test =  (gattlib_context_t*)connection->context;
 	OrgBluezGattCharacteristic1 *characteristic = get_characteristic_from_uuid(uuid, test->device_object_path);
@@ -1043,17 +1111,28 @@ int gattlib_notification_start(gatt_connection_t* connection, const uuid_t* uuid
 	}
 
 	// Register a handle for notification
+	gulong handler_id =
 	g_signal_connect(characteristic,
 		"g-properties-changed",
 		G_CALLBACK (on_handle_characteristic_property_change),
 		connection);
 
+	//printf("[GATTLIB]Connected_handler =: %d %p \n", handler_id, characteristic);
 	GError *error = NULL;
 	org_bluez_gatt_characteristic1_call_start_notify_sync(characteristic, NULL, &error);
 
 	if (error) {
+		puts("Failed to start gattlib_notification_start.");
+		printf("Error: %s\n", error->message);
+		if (handler_id > 0) {
+			g_signal_handler_disconnect(characteristic, handler_id);
+		}
 		return 1;
-	} else {
+	}  if (handler_id <= 0) {
+                puts("Failed to start gattlib_notification_start due to invalid handler.");
+                return 1;
+    } else {
+		append(&test->notification_handlers, handler_id, uuid, characteristic );
 		return 0;
 	}
 }
@@ -1069,6 +1148,12 @@ int gattlib_notification_stop(gatt_connection_t* connection, const uuid_t* uuid)
 	org_bluez_gatt_characteristic1_call_stop_notify_sync(
 		characteristic, NULL, &error);
 
+	signal_handler_t *search_node = deleteNode(&test->notification_handlers,  uuid);
+	if (search_node != NULL) {
+		//printf("[GATTLIB]Disconnected_handler =: %d %p \n", search_node->handler_id, search_node->characteristic);
+		g_signal_handler_disconnect(search_node->characteristic, search_node->handler_id);
+		free(search_node);
+	}
 	if (error) {
 		return 1;
 	} else {

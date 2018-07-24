@@ -37,12 +37,20 @@
 #define BLUEZ_VERSIONS(major, minor)	(((major) << 8) | (minor))
 #define BLUEZ_VERSION					BLUEZ_VERSIONS(BLUEZ_VERSION_MAJOR, BLUEZ_VERSION_MINOR)
 
+typedef struct signal_handler{
+	struct signal_handler* next;
+	gulong handler_id;
+	uuid_t uuid;
+	OrgBluezGattCharacteristic1 *characteristic;
+}signal_handler_t;
+
 typedef struct {
 	char* device_object_path;
 	OrgBluezDevice1* device;
 	// keep a disconnection pointer just in case
 	gatt_disconnect_cb_t disconnect_cb;
-	gulong handler_id
+	gulong handler_id;
+	signal_handler_t *notification_handlers;
 } gattlib_context_t;
 
 #endif
