@@ -36,6 +36,7 @@ find_package(PkgConfig REQUIRED)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 # Expose 'gattlib.h' to all sub-directories
 include_directories(include)
+include_directories(include/bluez5/lib/)
 
 # Check version of Bluez to know which backend we use (ie: Bluez code or DBus)
 pkg_search_module(BLUEZ REQUIRED bluez)
@@ -135,6 +136,13 @@ endif()
 # List of file to install
 #
 install(FILES include/gattlib.h DESTINATION include)
+install(FILES dbus/gattlib_internal.h DESTINATION include)
+install(FILES build/dbus/org-bluez-adaptater1.h DESTINATION include)
+install(FILES build/dbus/org-bluez-device1.h DESTINATION include)
+install(FILES build/dbus/org-bluez-gattcharacteristic1.h DESTINATION include)
+install(FILES build/dbus/org-bluez-gattdescriptor1.h DESTINATION include)
+install(FILES build/dbus/org-bluez-gattservice1.h DESTINATION include)
+install(FILES dbus/bluez5/lib/uuid.h DESTINATION include/bluez5/lib)
 install(FILES ${PROJECT_BINARY_DIR}/gattlib.pc DESTINATION lib/pkgconfig)
 
 include(CPack)
