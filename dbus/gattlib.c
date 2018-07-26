@@ -170,6 +170,7 @@ int gattlib_adapter_close(void* adapter) {
 	return 0;
 }
 
+
 gboolean on_handle_device_property_change(
 	    OrgBluezGattCharacteristic1 *object,
 	    GVariant *arg_changed_properties,
@@ -337,19 +338,19 @@ gatt_connection_t *gattlib_connect(const char *src, const char *dst,
 		goto FREE_DEVICE;
 	}
 
-	// Wait for the property 'UUIDs' to be changed. We assume 'org.bluez.GattService1
-	// and 'org.bluez.GattCharacteristic1' to be advertised at that moment.
-	GMainLoop *loop = g_main_loop_new(NULL, 0);
-
-	// Register a handle for notification
-	g_signal_connect(device,
-		"g-properties-changed",
-		G_CALLBACK (on_handle_device_property_change),
-		loop);
-
-	g_timeout_add_seconds (CONNECT_TIMEOUT, stop_scan_func, loop);
-	g_main_loop_run(loop);
-	g_main_loop_unref(loop);
+//	// Wait for the property 'UUIDs' to be changed. We assume 'org.bluez.GattService1
+//	// and 'org.bluez.GattCharacteristic1' to be advertised at that moment.
+//	GMainLoop *loop = g_main_loop_new(NULL, 0);
+//
+//	// Register a handle for notification
+//	g_signal_connect(device,
+//		"g-properties-changed",
+//		G_CALLBACK (on_handle_device_property_change),
+//		loop);
+//
+//	g_timeout_add_seconds (CONNECT_TIMEOUT, stop_scan_func, loop);
+//	g_main_loop_run(loop);
+//	g_main_loop_unref(loop);
 
 	/*printf("Connection context: 0x%x\n", connection->context);
 	printf("Here: %s\n", conn_context->device_object_path);
