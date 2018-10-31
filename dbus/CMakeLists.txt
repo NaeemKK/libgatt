@@ -69,6 +69,12 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-gattdescriptor1.
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DBUS_BLUEZ_API}/org.bluez.GattDescriptor1.xml
                    COMMENT "Generate D-Bus 'org.bluez.GattDescriptor1.xml'"
                    )
+                   
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-AgentManager1.c
+                   COMMAND gdbus-codegen --interface-prefix org.bluez.AgentManager1. --generate-c-code ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-AgentManager1 ${CMAKE_CURRENT_SOURCE_DIR}/${DBUS_BLUEZ_API}/org.bluez.AgentManager1.xml
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DBUS_BLUEZ_API}/org.bluez.AgentManager1.xml
+                   COMMENT "Generate D-Bus 'org.bluez.AgentManager1.xml'"
+                   )                   
 
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR} ${GIO_UNIX_INCLUDE_DIRS} ${BLUEZ_INCLUDE_DIRS})
 
@@ -79,7 +85,8 @@ set(gattlib_SRCS gattlib.c
                  ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-device1.c
                  ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-gattcharacteristic1.c
                  ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-gattdescriptor1.c
-                 ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-gattservice1.c)
+                 ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-gattservice1.c
+                 ${CMAKE_CURRENT_BINARY_DIR}/org-bluez-AgentManager1.c)
 
 set(gattlib_LIBS ${GLIB_LDFLAGS} ${GIO_UNIX_LDFLAGS})
 

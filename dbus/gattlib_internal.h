@@ -31,6 +31,7 @@
 #include "org-bluez-gattcharacteristic1.h"
 #include "org-bluez-gattdescriptor1.h"
 #include "org-bluez-gattservice1.h"
+#include "org-bluez-AgentManager1.h"
 
 #include "bluez5/lib/uuid.h"
 
