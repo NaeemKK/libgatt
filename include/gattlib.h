@@ -56,6 +56,10 @@ extern "C" {
 #define GATTLIB_CHARACTERISTIC_NOTIFY				0x10
 #define GATTLIB_CHARACTERISTIC_INDICATE				0x20
 
+/* paired status*/
+#define UNSECURE 0
+#define SECURE 1
+
 #define CREATE_UUID16(value16) { .type=SDP_UUID16, .value.uuid16=(value16) }
 
 typedef enum {
@@ -80,6 +84,8 @@ typedef struct _gatt_connection_t {
 } gatt_connection_t;
 
 typedef void (*gattlib_discovered_device_t)(const char* addr, const char* name);
+typedef void (*gattlib_connected_device_t)(const char* addr, const char* name);
+typedef void (*gattlib_paired_device_t)(const char* addr, const char* name);
 typedef void (*gatt_connect_cb_t)(gatt_connection_t* connection);
 typedef void (*gatt_disconnect_cb_t)(gatt_connection_t* connection);
 typedef void* (*gatt_read_cb_t)(const void* buffer, size_t buffer_len);
@@ -113,6 +119,12 @@ gatt_connection_t *gattlib_connect_async(const char *src, const char *dst,
 int gattlib_register_disconnect(gatt_connection_t* connection, gatt_disconnect_cb_t disconnect_cb);
 int gattlib_disconnect(gatt_connection_t* connection);
 int gattlib_rssi(gatt_connection_t* connection);
+int gattlib_is_conn_dev_paired(gatt_connection_t *connection);
+int gattlib_pair(const char *adapter ,const char *address);
+int gattlib_remove_device(const char *adapter, const char * address);
+int gattlib_get_paired_devices(void* adapter, gattlib_paired_device_t paired_device_cb);
+int gattlib_get_connected_devices(void* adapter, gattlib_connected_device_t connected_device_cb);
+//int register_agent(char *);
 typedef struct {
 	uint16_t  attr_handle_start;
 	uint16_t  attr_handle_end;

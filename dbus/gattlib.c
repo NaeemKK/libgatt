@@ -94,7 +94,21 @@ void on_dbus_object_added(GDBusObjectManager *device_manager,
 int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t discovered_device_cb, int timeout) {
 	GDBusObjectManager *device_manager;
 	GError *error = NULL;
-	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
+	const char* adapter_name;
+
+	if(timeout <=0)
+		timeout=1;
+
+	if (adapter)
+	{
+		adapter_name = adapter;
+	}
+	else
+	{
+		adapter_name = "hci0";
+	}
+
+	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter_name, NULL, &error);
 
 	//
 	// Get notification when objects are removed from the Bluez ObjectManager.
@@ -112,10 +126,15 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 		puts("Failed to get Bluez Device Manager.");
 		return 1;
 	}
+	/* We are doing this becuase we may get false negative for discovered devices rssi.
+	 * Give some time to update rssi for devices
+	 * */
+	sleep(2);
 
 	GList *objects = g_dbus_object_manager_get_objects(device_manager);
 	GList *l;
-	for (l = objects; l != NULL; l = l->next)  {
+	for (l = objects; l != NULL; l = l->next)
+	{
 		GDBusObject *object = l->data;
 		const char* object_path = g_dbus_object_get_object_path(G_DBUS_OBJECT(object));
 
@@ -134,10 +153,23 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 				&error);
 
 		if (device1) {
-			discovered_device_cb(
-				org_bluez_device1_get_address(device1),
-				org_bluez_device1_get_name(device1));
-			g_object_unref(device1);
+			//printf("\n RSSI is %d",org_bluez_device1_get_rssi(device1));
+			if(org_bluez_device1_get_rssi(device1) != 0)
+			{
+				discovered_device_cb(
+					org_bluez_device1_get_address(device1),
+					org_bluez_device1_get_name(device1));
+				g_object_unref(device1);
+			}
+//			else if(!org_bluez_device1_get_connected(device1) && !org_bluez_device1_get_paired(device1))
+//			{
+//				// remove object if advertising device no longer exists which is not conn and paired
+//				char address[20];
+//				strcpy(address,org_bluez_device1_get_address(device1));
+//				g_object_unref(device1);
+//				printf("address is %s",address);
+//				gattlib_remove_device(adapter_name,address);
+//			}
 		}
 	}
 
@@ -1163,3 +1195,313 @@ int gattlib_notification_stop(gatt_connection_t* connection, const uuid_t* uuid)
 		return 0;
 	}
 }
+
+static int is_dev_paired(OrgBluezDevice1 *object)
+{
+	return org_bluez_device1_get_paired(object) ? SECURE : UNSECURE;
+}
+
+int gattlib_pair(const char *adapter ,const char *address)
+{
+	GError *error = NULL;
+	const char* adapter_name;
+	char device_address_str[20];
+	char object_path[100];
+	int i,ret=0;
+
+	if (adapter) {
+		adapter_name = adapter;
+	} else {
+		adapter_name = "hci0";
+	}
+	// Transform string from 'DA:94:40:95:E0:87' to 'dev_DA_94_40_95_E0_87'
+	strncpy(device_address_str, address, sizeof(device_address_str));
+	for (i = 0; i < strlen(device_address_str); i++) {
+		if (device_address_str[i] == ':') {
+			device_address_str[i] = '_';
+		}
+	}
+
+	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
+	snprintf(object_path, sizeof(object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
+	printf("object path %s\n",object_path);
+	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
+				G_BUS_TYPE_SYSTEM,
+				G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+				"org.bluez",
+				object_path,
+				NULL,
+				&error);
+	if (device == NULL)
+	{
+		printf("Device object creation error: %s\n", error->message);
+		return -1;
+	}
+	else
+	{
+		error = NULL;
+		// if already paired, don't try as it will return error
+		if(! is_dev_paired(device))
+		{
+			if( org_bluez_device1_call_pair_sync(device,NULL,&error) )
+			{
+				ret = 0;
+			}else
+			{
+				printf("Device pairing error: %s\n", error->message);
+				ret = -1;
+			}
+		}
+		else
+		{
+			printf("device [%s] is already paired",address);
+			ret = 0;
+		}
+	}
+	g_object_unref(device);
+	return ret;
+}
+
+int gattlib_is_conn_dev_paired(gatt_connection_t *connection)
+{
+	gattlib_context_t* conn_context = (gattlib_context_t *)connection->context;
+	OrgBluezDevice1* device = conn_context->device;
+	return org_bluez_device1_get_paired(device) ? SECURE : UNSECURE;
+}
+
+int gattlib_remove_device(const char *adapter, const char * address)
+{
+	GError *error = NULL;
+	const char* adapter_name;
+	char device_address_str[20];
+	char dev_object_path[100];
+	char adapter_object_path[100];
+	int i,ret=0;
+
+	if (adapter) {
+		adapter_name = adapter;
+	}
+	else
+	{
+		adapter_name = "hci0";
+	}
+	// Transform string from 'DA:94:40:95:E0:87' to 'dev_DA_94_40_95_E0_87'
+	strncpy(device_address_str, address, sizeof(device_address_str));
+	for (i = 0; i < strlen(device_address_str); i++) {
+		if (device_address_str[i] == ':') {
+			device_address_str[i] = '_';
+		}
+	}
+
+	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
+	snprintf(dev_object_path, sizeof(dev_object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
+	snprintf(adapter_object_path, sizeof(adapter_object_path), "/org/bluez/%s", adapter_name);
+	printf("object path %s\n",dev_object_path);
+	OrgBluezAdapter1 *device = org_bluez_adapter1_proxy_new_for_bus_sync(
+			G_BUS_TYPE_SYSTEM,
+			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+			"org.bluez",
+			adapter_object_path,
+			NULL,
+			&error);
+	if(! device)
+	{
+		printf("getting adapter error: %s\n", error->message);
+		return -1;
+	}
+
+	if(org_bluez_adapter1_call_remove_device_sync (device,dev_object_path,NULL,&error) )
+	{
+		printf("removed \n");
+		ret = 0;
+	}
+	else
+	{
+		printf("removing device error: %s\n", error->message);
+		ret = -1;
+	}
+	g_object_unref(device);
+	return ret;
+}
+
+int gattlib_get_connected_devices(void* adapter, gattlib_connected_device_t connected_device_cb)
+{
+	GDBusObjectManager *device_manager;
+	GError *error = NULL;
+	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
+
+	/*get manager obj for bluez*/
+	device_manager = g_dbus_object_manager_client_new_for_bus_sync (
+			G_BUS_TYPE_SYSTEM,
+			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+			"org.bluez",
+			"/",
+			NULL, NULL, NULL, NULL,
+			&error);
+	if (device_manager == NULL) {
+		printf("Failed to get Bluez Device Manager.");
+		return -1;
+	}
+    /*get all objects i.e. devices objs*/
+	GList *objects = g_dbus_object_manager_get_objects(device_manager);
+	GList *l;
+	for (l = objects; l != NULL; l = l->next)
+	{
+		GDBusObject *object = l->data;
+		const char* object_path = g_dbus_object_get_object_path(G_DBUS_OBJECT(object));
+
+		GDBusInterface *interface = g_dbus_object_manager_get_interface(device_manager, object_path, "org.bluez.Device1");
+		if (!interface) {
+			continue;
+		}
+
+		error = NULL;
+		OrgBluezDevice1* device1 = org_bluez_device1_proxy_new_for_bus_sync(
+				G_BUS_TYPE_SYSTEM,
+				G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+				"org.bluez",
+				object_path,
+				NULL,
+				&error);
+
+		if (device1) {
+			if(org_bluez_device1_get_connected(device1))
+			{
+				connected_device_cb(
+					org_bluez_device1_get_address(device1),
+					org_bluez_device1_get_name(device1));
+			}
+			g_object_unref(device1);
+		}
+	}
+
+	g_list_free_full(objects, g_object_unref);
+
+	g_object_unref(device_manager);
+	return 0;
+}
+
+int gattlib_get_paired_devices(void* adapter, gattlib_paired_device_t paired_device_cb)
+{
+	GDBusObjectManager *device_manager;
+	GError *error = NULL;
+	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
+
+	/*get manager obj for bluez*/
+	device_manager = g_dbus_object_manager_client_new_for_bus_sync (
+			G_BUS_TYPE_SYSTEM,
+			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+			"org.bluez",
+			"/",
+			NULL, NULL, NULL, NULL,
+			&error);
+	if (device_manager == NULL) {
+		printf("Failed to get Bluez Device Manager.");
+		return -1;
+	}
+    /*get all objects i.e. devices objs*/
+	GList *objects = g_dbus_object_manager_get_objects(device_manager);
+	GList *l;
+	for (l = objects; l != NULL; l = l->next)
+	{
+		GDBusObject *object = l->data;
+		const char* object_path = g_dbus_object_get_object_path(G_DBUS_OBJECT(object));
+
+		GDBusInterface *interface = g_dbus_object_manager_get_interface(device_manager, object_path, "org.bluez.Device1");
+		if (!interface) {
+			continue;
+		}
+
+		error = NULL;
+		OrgBluezDevice1* device1 = org_bluez_device1_proxy_new_for_bus_sync(
+				G_BUS_TYPE_SYSTEM,
+				G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+				"org.bluez",
+				object_path,
+				NULL,
+				&error);
+
+		if (device1) {
+			if(org_bluez_device1_get_paired(device1))
+			{
+				paired_device_cb(
+					org_bluez_device1_get_address(device1),
+					org_bluez_device1_get_name(device1));
+			}
+			g_object_unref(device1);
+		}
+	}
+
+	g_list_free_full(objects, g_object_unref);
+
+	g_object_unref(device_manager);
+	return 0;
+}
+
+
+/*int register_agent(char *agent_path)
+{
+	GError *error = NULL;
+	OrgBluezAgentManager1 *manager = org_bluez_agent_manager1_proxy_new_for_bus_sync(
+			G_BUS_TYPE_SYSTEM,
+			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+			"org.bluez",
+			"/org/bluez",
+			NULL,
+			&error);
+	if(manager == NULL)
+	{
+		printf("agent manager error: %s\n", error->message);
+		return -1;
+	}else
+	{
+		error = NULL;
+		if(org_bluez_agent_manager1_call_register_agent_sync (
+				manager,
+				agent_path,
+			   "DisplayYesNo",
+			   NULL,
+			&error) )
+		{
+			printf("agent registered\n");
+			if ( org_bluez_agent_manager1_call_request_default_agent_sync(
+					manager,
+					agent_path,
+					NULL,
+					&error
+					) )
+			{
+				printf("default agent registered\n");
+				//			OrgBluezAgent1 *agent = org_bluez_agent1_proxy_new_for_bus_sync(
+				//					G_BUS_TYPE_SYSTEM,
+				//					G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+				//					"org.bluez",
+				//					"/org/bluez",
+				//					NULL,
+				//					&error);
+				//			if(agent != NULL)
+				//			{
+				//				printf("got agent\n");
+				//				if(org_bluez_agent1_call_request_confirmation_sync(agent,"yes",1,NULL,&error))
+				//				{
+				//					printf("confirmed and paired\n");
+				//				}else
+				//					printf("request confirm  error: %s\n", error->message);
+				//			}else
+				//			{
+				//				printf("agent get error: %s\n", error->message);
+				//				return -1;
+				//			}
+			}
+			else
+				printf("default agent error: %s\n", error->message);
+			return 0;
+		}else
+		{
+			printf("register agent error: %s\n", error->message);
+			return -1;
+		}
+	}
+	return 0;
+}
+*/
