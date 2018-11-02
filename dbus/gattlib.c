@@ -159,6 +159,7 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 				discovered_device_cb(
 					org_bluez_device1_get_address(device1),
 					org_bluez_device1_get_name(device1));
+				printf("\n DISCOVERED %s",org_bluez_device1_get_name(device1));
 				g_object_unref(device1);
 			}
 //			else if(!org_bluez_device1_get_connected(device1) && !org_bluez_device1_get_paired(device1))
@@ -1324,11 +1325,10 @@ int gattlib_remove_device(const char *adapter, const char * address)
 	return ret;
 }
 
-int gattlib_get_connected_devices(void* adapter, gattlib_connected_device_t connected_device_cb)
+int gattlib_get_connected_devices(gattlib_connected_device_t connected_device_cb)
 {
 	GDBusObjectManager *device_manager;
 	GError *error = NULL;
-	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
 
 	/*get manager obj for bluez*/
 	device_manager = g_dbus_object_manager_client_new_for_bus_sync (
@@ -1381,11 +1381,10 @@ int gattlib_get_connected_devices(void* adapter, gattlib_connected_device_t conn
 	return 0;
 }
 
-int gattlib_get_paired_devices(void* adapter, gattlib_paired_device_t paired_device_cb)
+int gattlib_get_paired_devices(gattlib_paired_device_t paired_device_cb)
 {
 	GDBusObjectManager *device_manager;
 	GError *error = NULL;
-	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
 
 	/*get manager obj for bluez*/
 	device_manager = g_dbus_object_manager_client_new_for_bus_sync (

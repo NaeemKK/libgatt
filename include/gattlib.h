@@ -122,8 +122,8 @@ int gattlib_rssi(gatt_connection_t* connection);
 int gattlib_is_conn_dev_paired(gatt_connection_t *connection);
 int gattlib_pair(const char *adapter ,const char *address);
 int gattlib_remove_device(const char *adapter, const char * address);
-int gattlib_get_paired_devices(void* adapter, gattlib_paired_device_t paired_device_cb);
-int gattlib_get_connected_devices(void* adapter, gattlib_connected_device_t connected_device_cb);
+int gattlib_get_paired_devices(gattlib_paired_device_t paired_device_cb);
+int gattlib_get_connected_devices(gattlib_connected_device_t connected_device_cb);
 //int register_agent(char *);
 typedef struct {
 	uint16_t  attr_handle_start;
