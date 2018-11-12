@@ -94,21 +94,12 @@ void on_dbus_object_added(GDBusObjectManager *device_manager,
 int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t discovered_device_cb, int timeout) {
 	GDBusObjectManager *device_manager;
 	GError *error = NULL;
-	const char* adapter_name;
 
 	if(timeout <=0)
 		timeout=1;
 
-	if (adapter)
-	{
-		adapter_name = adapter;
-	}
-	else
-	{
-		adapter_name = "hci0";
-	}
 
-	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter_name, NULL, &error);
+	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
 
 	//
 	// Get notification when objects are removed from the Bluez ObjectManager.
