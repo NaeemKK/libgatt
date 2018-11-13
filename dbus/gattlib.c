@@ -283,11 +283,7 @@ int gattlib_register_disconnect(gatt_connection_t* connection, gatt_disconnect_c
 				connection);
 		if (conn_context->handler_id < 1)
 		{
-			//printf("[GATTLIB]Invalid handler Id\n");
-		}
-		else
-		{
-			//printf("[GATTLIB]handler Id = = %d device = %p\n", conn_context->handler_id, conn_context->device );
+			return -1;
 		}
 	}
 	return 0;
