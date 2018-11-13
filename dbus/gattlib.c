@@ -755,6 +755,7 @@ static void add_characteristics_from_service(GDBusObjectManager *device_manager,
 			*count = *count + 1;
 		}
 	}
+	g_list_free_full(objects, g_object_unref);
 }
 
 int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_t** characteristics, int* characteristic_count) {
