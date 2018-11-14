@@ -477,17 +477,27 @@ int gattlib_discover_primary(gatt_connection_t* connection, gattlib_primary_serv
 		}
 
 		if (org_bluez_gatt_service1_get_primary(service_proxy)) {
+			/** Naeem's editing ***/
+			gchar *p_uuid = org_bluez_gatt_service1_get_uuid(service_proxy);
+			if(!p_uuid)
+			{
+				g_object_unref(service_proxy);
+				service_proxy = NULL;
+				continue;
+			}
+			/**********************/
 			primary_services[count].attr_handle_start = 0;
 			primary_services[count].attr_handle_end   = 0;
 
 			gattlib_string_to_uuid(
-					org_bluez_gatt_service1_get_uuid(service_proxy),
+					p_uuid,
 					MAX_LEN_UUID_STR + 1,
 					&primary_services[count].uuid);
 			count++;
 		}
 
 		g_object_unref(service_proxy);
+		service_proxy=NULL;
 	}
 
 	*services       = primary_services;
@@ -558,18 +568,35 @@ int gattlib_discover_primary(gatt_connection_t* connection, gattlib_primary_serv
 
 		// Ensure the service is attached to this device
 		if (strcmp(conn_context->device_object_path, org_bluez_gatt_service1_get_device(service_proxy))) {
+			/** Naeem's editing***/
+			g_object_unref(service_proxy);
+			service_proxy = NULL;
+			/********************/
 			continue;
 		}
 
 		if (org_bluez_gatt_service1_get_primary(service_proxy)) {
+			/** Naeem's editing ***/
+			gchar *p_uuid = org_bluez_gatt_service1_get_uuid(service_proxy);
+			if(!p_uuid)
+			{
+				g_object_unref(service_proxy);
+				service_proxy = NULL;
+				continue;
+			}
+			/**********************/
 			primary_services[count].attr_handle_start = 0;
 			primary_services[count].attr_handle_end   = 0;
 
 			gattlib_string_to_uuid(
-					org_bluez_gatt_service1_get_uuid(service_proxy),
+					p_uuid,
 					MAX_LEN_UUID_STR + 1,
 					&primary_services[count].uuid);
 			count++;
+			/*** Naeem's editing ***/
+			g_object_unref(service_proxy);
+			service_proxy =NULL;
+			/*********/
 		}
 	}
 
@@ -728,6 +755,8 @@ static void add_characteristics_from_service(GDBusObjectManager *device_manager,
 		}
 
 		if (strcmp(org_bluez_gatt_characteristic1_get_service(characteristic), service_object_path)) {
+			g_object_unref(characteristic);
+			characteristic =NULL;
 			continue;
 		} else {
 			characteristic_list[*count].handle       = 0;
@@ -749,12 +778,23 @@ static void add_characteristics_from_service(GDBusObjectManager *device_manager,
 					characteristic_list[*count].properties |= GATTLIB_CHARACTERISTIC_INDICATE;
 				}
 			}
-
+			/** Naeem's editing ***/
+			gchar *p_uuid = org_bluez_gatt_characteristic1_get_uuid(characteristic);
+			if(!p_uuid)
+			{
+				g_object_unref(characteristic);
+				characteristic =NULL;
+				continue;
+			}
+			/**********************/
 			gattlib_string_to_uuid(
-					org_bluez_gatt_characteristic1_get_uuid(characteristic),
+					p_uuid,
 					MAX_LEN_UUID_STR + 1,
 					&characteristic_list[*count].uuid);
 			*count = *count + 1;
+
+			g_object_unref(characteristic);
+			characteristic =NULL;
 		}
 	}
 	g_list_free_full(objects, g_object_unref);
@@ -880,13 +920,21 @@ static OrgBluezGattCharacteristic1 *get_characteristic_from_uuid(const uuid_t* u
 		if (characteristic) {
 			uuid_t characteristic_uuid;
 			const gchar *characteristic_uuid_str = org_bluez_gatt_characteristic1_get_uuid(characteristic);
-
+			/** naeem's editing ***/
+			if(! characteristic_uuid_str)
+			{
+				g_object_unref(characteristic);
+				characteristic =NULL;
+				continue;
+			}
+			/****/
 			gattlib_string_to_uuid(characteristic_uuid_str, strlen(characteristic_uuid_str) + 1, &characteristic_uuid);
 			if (gattlib_uuid_cmp(uuid, &characteristic_uuid) == 0) {
 				break;
 			}
 
 			g_object_unref(characteristic);
+			characteristic =NULL;
 		}
 
 		// Ensure we set 'characteristic' back to NULL
@@ -932,6 +980,9 @@ int gattlib_read_char_by_uuid(gatt_connection_t* connection, uuid_t* uuid, void*
 	g_variant_builder_unref(options);
 #endif
 	if (error != NULL) {
+		/** Naeem's editing ***/
+		g_object_unref(characteristic);
+		characteristic =NULL;
 		return -1;
 	}
 
@@ -945,6 +996,7 @@ int gattlib_read_char_by_uuid(gatt_connection_t* connection, uuid_t* uuid, void*
 	*buffer_len = n_elements;
 
 	g_object_unref(characteristic);
+	characteristic = NULL;
 
 #if BLUEZ_VERSION >= BLUEZ_VERSIONS(5, 40)
 	//g_variant_unref(in_params); See: https://github.com/labapart/gattlib/issues/28#issuecomment-311486629
@@ -1045,9 +1097,16 @@ gboolean on_handle_characteristic_property_change(
 					uuid_t uuid;
 					size_t data_length;
 					const uint8_t* data = g_variant_get_fixed_array(value, &data_length, sizeof(guchar));
-
+					/** Naeem's editing ***/
+					gchar *p_uuid = org_bluez_gatt_characteristic1_get_uuid(object);
+					if(!p_uuid)
+					{
+						printf("\033[0;31m \nERROR: Data missed at gattlib due to error\n");
+						continue;
+					}
+					/**********************/
 					gattlib_string_to_uuid(
-							org_bluez_gatt_characteristic1_get_uuid(object),
+							p_uuid,
 							MAX_LEN_UUID_STR + 1,
 							&uuid);
 
