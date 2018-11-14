@@ -33,7 +33,8 @@ option(GATTLIB_SHARED_LIB "Build GattLib as a shared library" YES)
 find_package(PkgConfig REQUIRED)
 
 # Show all the warnings
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -g")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+set(CMAKE_BUILD_TYPE Debug)
 # Expose 'gattlib.h' to all sub-directories
 include_directories(include)
 include_directories(include/bluez5/lib/)

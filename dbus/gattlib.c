@@ -330,6 +330,7 @@ gatt_connection_t *gattlib_connect(const char *src, const char *dst,
 
 	gatt_connection_t* connection = calloc(sizeof(gatt_connection_t), 1);
 	if (connection == NULL) {
+		free(conn_context);
 		return NULL;
 	} else {
 		connection->context = conn_context;
@@ -388,6 +389,7 @@ FREE_DEVICE:
 	g_object_unref(conn_context->device);
 
 FREE_CONNECTION:
+	free(conn_context);
 	free(connection);
 	return NULL;
 }
