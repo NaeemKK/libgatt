@@ -150,8 +150,8 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 				discovered_device_cb(
 					org_bluez_device1_get_address(device1),
 					org_bluez_device1_get_name(device1));
-				g_object_unref(device1);
 			}
+			g_object_unref(device1);
 //			else if(!org_bluez_device1_get_connected(device1) && !org_bluez_device1_get_paired(device1))
 //			{
 //				// remove object if advertising device no longer exists which is not conn and paired
