@@ -166,7 +166,7 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 
 	g_list_free_full(objects, g_object_unref);
 
-	g_signal_connect (G_DBUS_OBJECT_MANAGER(device_manager),
+	gulong handler_id = g_signal_connect (G_DBUS_OBJECT_MANAGER(device_manager),
 	                    "object-added",
 	                    G_CALLBACK (on_dbus_object_added),
 	                    discovered_device_cb);
@@ -176,6 +176,9 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 	g_timeout_add_seconds (timeout, stop_scan_func, loop);
 	g_main_loop_run(loop);
 	g_main_loop_unref(loop);
+
+	if (handler_id > 0)
+		g_signal_handler_disconnect(G_DBUS_OBJECT_MANAGER(device_manager), handler_id);
 
 	g_object_unref(device_manager);
 	return 0;
@@ -1258,6 +1261,13 @@ int gattlib_pair(const char *adapter ,const char *address)
 	char object_path[100];
 	int i,ret=0;
 
+	if (adapter) {
+		adapter_name = adapter;
+	}
+	else
+	{
+		adapter_name = "hci0";
+	}
 	// Transform string from 'DA:94:40:95:E0:87' to 'dev_DA_94_40_95_E0_87'
 	strncpy(device_address_str, address, sizeof(device_address_str));
 	for (i = 0; i < strlen(device_address_str); i++) {
@@ -1267,7 +1277,7 @@ int gattlib_pair(const char *adapter ,const char *address)
 	}
 
 	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
-	snprintf(object_path, sizeof(object_path), "/org/bluez/%s/dev_%s", adapter, device_address_str);
+	snprintf(object_path, sizeof(object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
 	printf("object path %s\n",object_path);
 	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
 				G_BUS_TYPE_SYSTEM,
