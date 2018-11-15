@@ -1105,6 +1105,7 @@ gboolean on_handle_characteristic_property_change(
 					if(!p_uuid)
 					{
 						printf("\033[0;31m \nERROR: Data missed at gattlib due to error\n");
+						printf("\033[0m");
 						continue;
 					}
 					/**********************/
