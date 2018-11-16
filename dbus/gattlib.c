@@ -100,7 +100,11 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 
 
 	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
-
+	if(error)
+	{
+		printf("Failed to start discovery");
+                return 1;
+	}
 	//
 	// Get notification when objects are removed from the Bluez ObjectManager.
 	// We should get notified when the connection is lost with the target to allow
@@ -114,7 +118,7 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 			NULL, NULL, NULL, NULL,
 			&error);
 	if (device_manager == NULL) {
-		puts("Failed to get Bluez Device Manager.");
+		printf("Failed to get Bluez Device Manager.");
 		return 1;
 	}
 	/* We are doing this becuase we may get false negative for discovered devices rssi.
