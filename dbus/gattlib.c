@@ -1383,6 +1383,59 @@ int gattlib_remove_device(const char *adapter, const char * address)
 	return ret;
 }
 
+int gattlib_disconnect_using_address(const char *adapter, const char * address)
+{
+	GError *error = NULL;
+	const char* adapter_name;
+	char device_address_str[20];
+	char dev_object_path[100];
+	int i,ret=0;
+
+	if (adapter) {
+		adapter_name = adapter;
+	}
+	else
+	{
+		adapter_name = "hci0";
+	}
+	// Transform string from 'DA:94:40:95:E0:87' to 'dev_DA_94_40_95_E0_87'
+	strncpy(device_address_str, address, sizeof(device_address_str));
+	for (i = 0; i < strlen(device_address_str); i++) {
+		if (device_address_str[i] == ':') {
+			device_address_str[i] = '_';
+		}
+	}
+
+	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
+	snprintf(dev_object_path, sizeof(dev_object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
+	printf("object path %s\n",dev_object_path);
+	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
+						G_BUS_TYPE_SYSTEM,
+						G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+						"org.bluez",
+						dev_object_path,
+						NULL,
+						&error);
+	if(! device)
+	{
+		printf("getting adapter error: %s\n", error->message);
+		return -1;
+	}
+
+	if(org_bluez_device1_call_disconnect_sync(device, NULL, &error) )
+	{
+		printf("Disconnected \n");
+		ret = 0;
+	}
+	else
+	{
+		printf("Disconnection error: %s\n", error->message);
+		ret = -1;
+	}
+	g_object_unref(device);
+	return ret;
+}
+
 int gattlib_get_connected_devices(gattlib_connected_device_t connected_device_cb)
 {
 	GDBusObjectManager *device_manager;
@@ -1495,7 +1548,57 @@ int gattlib_get_paired_devices(gattlib_paired_device_t paired_device_cb)
 	return 0;
 }
 
+int is_dev_connected(char * adapter,char *address)
+{
+	GError *error = NULL;
+	const char* adapter_name;
+	char device_address_str[20];
+	char dev_object_path[100];
+	int i,ret=0;
 
+	if (adapter) {
+		adapter_name = adapter;
+	}
+	else
+	{
+		adapter_name = "hci0";
+	}
+	// Transform string from 'DA:94:40:95:E0:87' to 'dev_DA_94_40_95_E0_87'
+	strncpy(device_address_str, address, sizeof(device_address_str));
+	for (i = 0; i < strlen(device_address_str); i++) {
+		if (device_address_str[i] == ':') {
+			device_address_str[i] = '_';
+		}
+	}
+
+	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
+	snprintf(dev_object_path, sizeof(dev_object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
+	printf("object path %s\n",dev_object_path);
+	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
+					G_BUS_TYPE_SYSTEM,
+					G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
+					"org.bluez",
+					dev_object_path,
+					NULL,
+					&error);
+	if(! device)
+	{
+		printf("getting adapter error: %s\n", error->message);
+		return -1;
+	}
+
+	if(org_bluez_device1_get_connected(device) )
+	{
+		printf("Disconnected \n");
+		ret = 0;
+	}
+	else
+	{
+		ret = -1;
+	}
+	g_object_unref(device);
+	return ret;
+}
 /*int register_agent(char *agent_path)
 {
 	GError *error = NULL;

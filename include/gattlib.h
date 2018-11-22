@@ -124,6 +124,8 @@ int gattlib_pair(const char *adapter ,const char *address);
 int gattlib_remove_device(const char *adapter, const char * address);
 int gattlib_get_paired_devices(gattlib_paired_device_t paired_device_cb);
 int gattlib_get_connected_devices(gattlib_connected_device_t connected_device_cb);
+int gattlib_disconnect_using_address(const char *adapter, const char * address);
+int is_dev_connected(char * adapter,char *address);
 //int register_agent(char *);
 typedef struct {
 	uint16_t  attr_handle_start;
