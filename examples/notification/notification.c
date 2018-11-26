@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 	g_main_loop_run(loop);
 	printf("loop ended\n");
 	g_main_loop_unref(loop);
-	gattlib_disconnect(connection);
+	gattlib_disconnect(connection,true);
 	puts("Done");
 	return 0;
 }

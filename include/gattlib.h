@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-
+#include <stdbool.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
@@ -117,7 +117,7 @@ gatt_connection_t *gattlib_connect_async(const char *src, const char *dst,
 				gatt_connect_cb_t connect_cb);
 
 int gattlib_register_disconnect(gatt_connection_t* connection, gatt_disconnect_cb_t disconnect_cb);
-int gattlib_disconnect(gatt_connection_t* connection);
+int gattlib_disconnect(gatt_connection_t* connection, bool call_disconnect);
 int gattlib_rssi(gatt_connection_t* connection);
 int gattlib_is_conn_dev_paired(gatt_connection_t *connection);
 int gattlib_pair(const char *adapter ,const char *address);

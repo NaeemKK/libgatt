@@ -421,14 +421,14 @@ int gattlib_rssi(gatt_connection_t* connection)
 	return 0;
 }
 
-int gattlib_disconnect(gatt_connection_t* connection) {
+int gattlib_disconnect(gatt_connection_t* connection, bool call_disconnect) {
 	//printf("disconnect1\n");
 	gattlib_context_t* conn_context = connection->context;
 	//printf("disconnect2\n");
 	GError *error = NULL;
 	//printf("[GATTLIB]disconnecting handler Id = %d device = %p\n", conn_context->handler_id, conn_context->device );
 	g_signal_handler_disconnect (conn_context->device, conn_context->handler_id);
-	org_bluez_device1_call_disconnect_sync(conn_context->device, NULL, &error);
+	if(call_disconnect) org_bluez_device1_call_disconnect_sync(conn_context->device, NULL, &error);
 	//printf("disconnect3\n");
 	free(conn_context->device_object_path);
 	//printf("disconnect4\n");

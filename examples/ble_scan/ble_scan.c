@@ -77,7 +77,7 @@ static void *ble_connect_device(void *arg) {
 	free(characteristics);
 
 disconnect_exit:
-	gattlib_disconnect(gatt_connection);
+	gattlib_disconnect(gatt_connection,true);
 
 connection_exit:
 	printf("------------DONE %s ---------------\n", addr);

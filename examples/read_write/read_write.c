@@ -136,6 +136,6 @@ int main(int argc, char *argv[]) {
 		assert(ret == 0);
 	}
 
-	gattlib_disconnect(connection);
+	gattlib_disconnect(connection,true);
 	return 0;
 }

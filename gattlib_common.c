@@ -1,5 +1,4 @@
 #include "gattlib_internal.h"
-
 void gattlib_register_notification(gatt_connection_t* connection, gattlib_event_handler_t notification_handler, void* user_data) {
 	connection->notification_handler = notification_handler;
 	connection->notification_user_data = user_data;
