@@ -51,7 +51,8 @@ int gattlib_adapter_open(const char* adapter_name, void** adapter) {
 	}
 
 	// Ensure the adapter is powered on
-	org_bluez_adapter1_set_powered(adapter_proxy, TRUE);
+	if(! org_bluez_adapter1_get_powered(adapter_proxy) )
+		org_bluez_adapter1_set_powered(adapter_proxy, TRUE);
 
 	*adapter = adapter_proxy;
 	return 0;
