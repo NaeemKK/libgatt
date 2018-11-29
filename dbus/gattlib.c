@@ -63,6 +63,16 @@ static gboolean stop_scan_func(gpointer data) {
 	return FALSE;
 }
 
+
+void gattlib_power_on_adapter(void* adapter)
+{
+	org_bluez_adapter1_set_powered(adapter, TRUE);
+}
+
+void gattlib_power_off_adapter(void* adapter)
+{
+	org_bluez_adapter1_set_powered(adapter, FALSE);
+}
 void on_dbus_object_added(GDBusObjectManager *device_manager,
                      GDBusObject        *object,
                      gpointer            user_data)
