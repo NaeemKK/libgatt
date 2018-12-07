@@ -97,6 +97,7 @@ typedef void* (*gatt_read_cb_t)(const void* buffer, size_t buffer_len);
  * @adapter_name    With value NULL, the default adapter will be selected.
  */
 int gattlib_adapter_open(const char* adapter_name, void** adapter);
+int gattlib_set_discovery_filter(void* adapter);
 int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t discovered_device_cb, int timeout);
 int gattlib_adapter_scan_disable(void* adapter);
 int gattlib_adapter_close(void* adapter);

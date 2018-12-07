@@ -102,6 +102,46 @@ void on_dbus_object_added(GDBusObjectManager *device_manager,
 	}
 }
 
+int gattlib_set_discovery_filter(void* adapter)
+{
+	GError *error = NULL;
+	GVariantBuilder *b = g_variant_builder_new(G_VARIANT_TYPE_VARDICT);
+	g_variant_builder_add(b, "{sv}", "Transport", g_variant_new_string("le"));
+	//g_variant_builder_add(b, "{sv}", "RSSI",g_variant_new_int16(-g_ascii_strtod("99", NULL)));
+	GVariantBuilder *u = g_variant_builder_new(G_VARIANT_TYPE_STRING_ARRAY);
+	g_variant_builder_add(u, "s", "ADE3D529-C784-4F63-A987-EB69F70EE816");
+	g_variant_builder_add(b, "{sv}", "UUIDs", g_variant_builder_end(u));
+	GVariant *device_dict = g_variant_builder_end(b);
+	g_variant_builder_unref(u);
+	g_variant_builder_unref(b);
+	printf("\n Setting filters");
+	fflush(stdout);
+	if (g_variant_n_children (device_dict) > 0) {
+		GVariantIter *iter;
+		const gchar *key;
+		GVariant *value;
+
+		g_variant_get (device_dict, "a{sv}", &iter);
+		while (g_variant_iter_loop (iter, "{&sv}", &key, &value)) {
+			//char arr[100];
+			//g_variant_get(value,arr);
+			if(!strcmp("Transport",key))
+				printf("\n  %s : %s",key,g_variant_get_string(value,NULL));
+			else
+			{
+				char **arr=g_variant_get_strv(value,NULL);
+				printf("\n%s : %s",key,arr[0]);
+			}
+		}
+	}
+
+	if(org_bluez_adapter1_call_set_discovery_filter_sync((OrgBluezAdapter1*)adapter,device_dict,NULL,&error) == FALSE)
+	{
+		printf("\n filter could not be set %s",error->message);
+		return -1;
+	}
+	return 0;
+}
 int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t discovered_device_cb, int timeout) {
 	GDBusObjectManager *device_manager;
 	GError *error = NULL;
