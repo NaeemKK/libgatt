@@ -137,7 +137,7 @@ int gattlib_set_discovery_filter(void* adapter)
 
 	if(org_bluez_adapter1_call_set_discovery_filter_sync((OrgBluezAdapter1*)adapter,device_dict,NULL,&error) == FALSE)
 	{
-		printf("\n filter could not be set %s",error->message);
+		printf("\nFilter could not be set %s",error->message);
 		return -1;
 	}
 	return 0;
@@ -149,12 +149,11 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 	if(timeout <=0)
 		timeout=1;
 
-
 	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
 	if(error)
 	{
-		printf("Failed to start discovery");
-                return 1;
+		printf("\nFailed to start discovery %s",error->message);
+        return -1;
 	}
 	//
 	// Get notification when objects are removed from the Bluez ObjectManager.
@@ -169,8 +168,8 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 			NULL, NULL, NULL, NULL,
 			&error);
 	if (device_manager == NULL) {
-		printf("Failed to get Bluez Device Manager.");
-		return 1;
+		printf("Failed to get Bluez Device Manager %s",error->message);
+		return -1;
 	}
 	/* We are doing this becuase we may get false negative for discovered devices rssi.
 	 * Give some time to update rssi for devices
@@ -242,7 +241,11 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 int gattlib_adapter_scan_disable(void* adapter) {
 	GError *error = NULL;
 
-	org_bluez_adapter1_call_stop_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
+	if( org_bluez_adapter1_call_stop_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error) == FALSE)
+	{
+		printf("\nDiscovery cannot be stopped : %s",error->message);
+		return -1;
+	}
 	return 0;
 }
 
