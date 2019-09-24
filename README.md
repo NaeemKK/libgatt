@@ -58,6 +58,7 @@ TODO List
 =========
 
 - Alot of cleanup is required i.e. commented out code, extra spaces and unnecessary functions.
+- adjust return values of all functions 
 - Undo changes made to examples for testing
 - change compile options to use name libgatt
 
