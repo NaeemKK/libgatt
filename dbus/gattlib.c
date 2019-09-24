@@ -46,8 +46,8 @@ int gattlib_adapter_open(const char* adapter_name, void** adapter) {
 			object_path,
 			NULL, &error);
 	if (adapter_proxy == NULL) {
-		printf("Failed to get adapter %s\n", object_path);
-		return 1;
+		//printf("Failed to get adapter %s\n", object_path);
+		return -1;
 	}
 
 	// Ensure the adapter is powered on
@@ -114,7 +114,7 @@ int gattlib_set_discovery_filter(void* adapter)
 	GVariant *device_dict = g_variant_builder_end(b);
 	g_variant_builder_unref(u);
 	g_variant_builder_unref(b);
-	printf("\n Setting filters");
+	//printf("\n Setting filters");
 	fflush(stdout);
 	if (g_variant_n_children (device_dict) > 0) {
 		GVariantIter *iter;
@@ -130,14 +130,14 @@ int gattlib_set_discovery_filter(void* adapter)
 			else
 			{
 				char **arr=g_variant_get_strv(value,NULL);
-				printf("\n%s : %s",key,arr[0]);
+				//printf("\n%s : %s",key,arr[0]);
 			}
 		}
 	}
 
 	if(org_bluez_adapter1_call_set_discovery_filter_sync((OrgBluezAdapter1*)adapter,device_dict,NULL,&error) == FALSE)
 	{
-		printf("\nFilter could not be set %s",error->message);
+		//printf("\nFilter could not be set %s",error->message);
 		return -1;
 	}
 	return 0;
@@ -152,7 +152,7 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 	org_bluez_adapter1_call_start_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error);
 	if(error)
 	{
-		printf("\nFailed to start discovery %s",error->message);
+		//printf("\nFailed to start discovery %s",error->message);
         return -1;
 	}
 	//
@@ -168,7 +168,7 @@ int gattlib_adapter_scan_enable(void* adapter, gattlib_discovered_device_t disco
 			NULL, NULL, NULL, NULL,
 			&error);
 	if (device_manager == NULL) {
-		printf("Failed to get Bluez Device Manager %s",error->message);
+		//printf("Failed to get Bluez Device Manager %s",error->message);
 		return -1;
 	}
 	/* We are doing this becuase we may get false negative for discovered devices rssi.
@@ -243,7 +243,7 @@ int gattlib_adapter_scan_disable(void* adapter) {
 
 	if( org_bluez_adapter1_call_stop_discovery_sync((OrgBluezAdapter1*)adapter, NULL, &error) == FALSE)
 	{
-		printf("\nDiscovery cannot be stopped : %s",error->message);
+		//printf("\nDiscovery cannot be stopped : %s",error->message);
 		return -1;
 	}
 	return 0;
@@ -415,7 +415,7 @@ gatt_connection_t *gattlib_connect(const char *src, const char *dst,
 	error = NULL;
 	org_bluez_device1_call_connect_sync(device, NULL, &error);
 	if (error) {
-		printf("Device connected error: %s\n", error->message);
+		//printf("Device connected error: %s\n", error->message);
 		goto FREE_DEVICE;
 	}
 
@@ -472,7 +472,7 @@ int gattlib_rssi(gatt_connection_t* connection)
 	printf("Name: %s\n", org_bluez_device1_get_name(conn_context->device));
 	printf("Adapter: %s\n", org_bluez_device1_get_adapter(conn_context->device));*/
 	//printf("RSSI: %u\n", org_bluez_device1_get_rssi(device));
-	return 0;
+	return org_bluez_device1_get_rssi(conn_context->device);
 }
 
 int gattlib_disconnect(gatt_connection_t* connection, bool call_disconnect) {
@@ -520,7 +520,7 @@ int gattlib_discover_primary(gatt_connection_t* connection, gattlib_primary_serv
 
 	gattlib_primary_service_t* primary_services = malloc(count_max * sizeof(gattlib_primary_service_t));
 	if (primary_services == NULL) {
-		return 1;
+		return -1;
 	}
 
 	for (service_str = service_strs; *service_str != NULL; service_str++) {
@@ -533,7 +533,7 @@ int gattlib_discover_primary(gatt_connection_t* connection, gattlib_primary_serv
 				NULL,
 				&error);
 		if (service_proxy == NULL) {
-			printf("Failed to open service '%s'.\n", *service_str);
+			//printf("Failed to open service '%s'.\n", *service_str);
 			continue;
 		}
 
@@ -588,7 +588,7 @@ int gattlib_discover_primary(gatt_connection_t* connection, gattlib_primary_serv
 
 	gattlib_primary_service_t* primary_services = malloc(count_max * sizeof(gattlib_primary_service_t));
 	if (primary_services == NULL) {
-		return 1;
+		return -1;
 	}
 
 	GDBusObjectManager *device_manager = g_dbus_object_manager_client_new_for_bus_sync (
@@ -600,7 +600,7 @@ int gattlib_discover_primary(gatt_connection_t* connection, gattlib_primary_serv
 			&error);
 	if (device_manager == NULL) {
 		puts("Failed to get Bluez Device Manager.");
-		return 1;
+		return -1;
 	}
 
 	GList *objects = g_dbus_object_manager_get_objects(device_manager);
@@ -623,7 +623,7 @@ int gattlib_discover_primary(gatt_connection_t* connection, gattlib_primary_serv
 				NULL,
 				&error);
 		if (service_proxy == NULL) {
-			printf("Failed to open service '%s'.\n", object_path);
+			//printf("Failed to open service '%s'.\n", object_path);
 			continue;
 		}
 
@@ -702,7 +702,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 				NULL,
 				&error);
 		if (service_proxy == NULL) {
-			printf("Failed to open services '%s'.\n", *service_str);
+			//printf("Failed to open services '%s'.\n", *service_str);
 			continue;
 		}
 
@@ -720,7 +720,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 
 	gattlib_characteristic_t* characteristic_list = malloc(count_max * sizeof(gattlib_characteristic_t));
 	if (characteristic_list == NULL) {
-		return 1;
+		return -1;
 	}
 
 	for (service_str = service_strs; *service_str != NULL; service_str++) {
@@ -733,7 +733,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 				NULL,
 				&error);
 		if (service_proxy == NULL) {
-			printf("Failed to open service '%s'.\n", *service_str);
+			//printf("Failed to open service '%s'.\n", *service_str);
 			continue;
 		}
 
@@ -751,7 +751,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 					NULL,
 					&error);
 			if (characteristic_proxy == NULL) {
-				printf("Failed to open characteristic '%s'.\n", *characteristic_str);
+				//printf("Failed to open characteristic '%s'.\n", *characteristic_str);
 				continue;
 			} else {
 				characteristic_list[count].handle       = 0;
@@ -811,7 +811,7 @@ static void add_characteristics_from_service(GDBusObjectManager *device_manager,
 				NULL,
 				&error);
 		if (characteristic == NULL) {
-			printf("Failed to open characteristic '%s'.\n", object_path);
+			//printf("Failed to open characteristic '%s'.\n", object_path);
 			continue;
 		}
 
@@ -876,7 +876,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 			&error);
 	if (device_manager == NULL) {
 		puts("Failed to get Bluez Device Manager.");
-		return 1;
+		return -1;
 	}
 	GList *objects = g_dbus_object_manager_get_objects(device_manager);
 
@@ -894,7 +894,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 
 	gattlib_characteristic_t* characteristic_list = malloc(count_max * sizeof(gattlib_characteristic_t));
 	if (characteristic_list == NULL) {
-		return 1;
+		return -1;
 	}
 
 	// List all services for this device
@@ -916,7 +916,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 				NULL,
 				&error);
 		if (service_proxy == NULL) {
-			printf("Failed to open service '%s'.\n", object_path);
+			//printf("Failed to open service '%s'.\n", object_path);
 			continue;
 		}
 
@@ -942,7 +942,7 @@ int gattlib_discover_char(gatt_connection_t* connection, gattlib_characteristic_
 static OrgBluezGattCharacteristic1 *get_characteristic_from_uuid(const uuid_t* uuid, char* unique_path) {
 	OrgBluezGattCharacteristic1 *characteristic = NULL;
 	GError *error = NULL;
-	//printf("Unique path: %s\n", unique_path);
+	////printf("Unique path: %s\n", unique_path);
 	GDBusObjectManager *device_manager = g_dbus_object_manager_client_new_for_bus_sync (
 			G_BUS_TYPE_SYSTEM,
 			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
@@ -952,7 +952,7 @@ static OrgBluezGattCharacteristic1 *get_characteristic_from_uuid(const uuid_t* u
 			&error);
 	if (device_manager == NULL) {
 		puts("Failed to get Bluez Device Manager.");
-		printf("Error: %s\n", error->message);
+		//printf("Error: %s\n", error->message);
 		return NULL;
 	}
 
@@ -1106,7 +1106,7 @@ int gattlib_write_char_by_uuid(gatt_connection_t* connection, uuid_t* uuid, cons
 	gattlib_context_t* test =  (gattlib_context_t*)connection->context;
 	OrgBluezGattCharacteristic1 *characteristic = get_characteristic_from_uuid(uuid, test->device_object_path);
 	if (characteristic == NULL) {
-		printf("Characteristic is null\n");
+		//printf("Characteristic is null\n");
 		return -1;
 	}
 	//printf("Characteristic is not null\n");
@@ -1121,8 +1121,7 @@ int gattlib_write_char_by_uuid(gatt_connection_t* connection, uuid_t* uuid, cons
 	g_variant_builder_unref(options);
 #endif
 	if (error != NULL) {
-		/*printf("ERROR is null\n");
-		printf ("Unable to read file: %s\n", error->message);*/
+		//printf ("Unable to read file: %s\n", error->message);
 		return -1;
 	}
 
@@ -1162,8 +1161,8 @@ gboolean on_handle_characteristic_property_change(
 					gchar *p_uuid = org_bluez_gatt_characteristic1_get_uuid(object);
 					if(!p_uuid)
 					{
-						printf("\033[0;31m \nERROR: Data missed at gattlib due to error\n");
-						printf("\033[0m");
+						//printf("\033[0;31m \nERROR: Data missed at gattlib due to error\n");
+						//printf("\033[0m");
 						continue;
 					}
 					/**********************/
@@ -1268,15 +1267,15 @@ int gattlib_notification_start(gatt_connection_t* connection, const uuid_t* uuid
 	org_bluez_gatt_characteristic1_call_start_notify_sync(characteristic, NULL, &error);
 
 	if (error) {
-		puts("Failed to start gattlib_notification_start.");
+		//puts("Failed to start gattlib_notification_start.");
 		printf("Error: %s\n", error->message);
 		if (handler_id > 0) {
 			g_signal_handler_disconnect(characteristic, handler_id);
 		}
-		return 1;
+		return -1;
 	}  if (handler_id <= 0) {
                 puts("Failed to start gattlib_notification_start due to invalid handler.");
-                return 1;
+                return -1;
     } else {
 		append(&test->notification_handlers, handler_id, uuid, characteristic );
 		return 0;
@@ -1302,7 +1301,7 @@ int gattlib_notification_stop(gatt_connection_t* connection, const uuid_t* uuid)
 	}
 	if (error) {
 		printf("Error: %s\n", error->message);
-		return 1;
+		return -1;
 	} else {
 		return 0;
 	}
@@ -1338,7 +1337,7 @@ int gattlib_pair(const char *adapter ,const char *address)
 
 	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
 	snprintf(object_path, sizeof(object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
-	printf("object path %s\n",object_path);
+	//printf("object path %s\n",object_path);
 	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
 				G_BUS_TYPE_SYSTEM,
 				G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
@@ -1368,7 +1367,7 @@ int gattlib_pair(const char *adapter ,const char *address)
 		}
 		else
 		{
-			printf("device [%s] is already paired",address);
+			//printf("device [%s] is already paired",address);
 			ret = 0;
 		}
 	}
@@ -1410,7 +1409,7 @@ int gattlib_remove_device(const char *adapter, const char * address)
 	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
 	snprintf(dev_object_path, sizeof(dev_object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
 	snprintf(adapter_object_path, sizeof(adapter_object_path), "/org/bluez/%s", adapter_name);
-	printf("object path %s\n",dev_object_path);
+	//printf("object path %s\n",dev_object_path);
 	OrgBluezAdapter1 *device = org_bluez_adapter1_proxy_new_for_bus_sync(
 			G_BUS_TYPE_SYSTEM,
 			G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
@@ -1420,18 +1419,18 @@ int gattlib_remove_device(const char *adapter, const char * address)
 			&error);
 	if(! device)
 	{
-		printf("getting adapter error: %s\n", error->message);
+		//printf("getting adapter error: %s\n", error->message);
 		return -1;
 	}
 
 	if(org_bluez_adapter1_call_remove_device_sync (device,dev_object_path,NULL,&error) )
 	{
-		printf("removed \n");
+		//printf("removed \n");
 		ret = 0;
 	}
 	else
 	{
-		printf("removing device error: %s\n", error->message);
+		//printf("removing device error: %s\n", error->message);
 		ret = -1;
 	}
 	g_object_unref(device);
@@ -1463,7 +1462,7 @@ int gattlib_disconnect_using_address(const char *adapter, const char * address)
 
 	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
 	snprintf(dev_object_path, sizeof(dev_object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
-	printf("object path %s\n",dev_object_path);
+	//printf("object path %s\n",dev_object_path);
 	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
 						G_BUS_TYPE_SYSTEM,
 						G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
@@ -1473,18 +1472,18 @@ int gattlib_disconnect_using_address(const char *adapter, const char * address)
 						&error);
 	if(! device)
 	{
-		printf("getting adapter error: %s\n", error->message);
+		//printf("getting adapter error: %s\n", error->message);
 		return -1;
 	}
 
 	if(org_bluez_device1_call_disconnect_sync(device, NULL, &error) )
 	{
-		printf("Disconnected \n");
+		//printf("Disconnected \n");
 		ret = 0;
 	}
 	else
 	{
-		printf("Disconnection error: %s\n", error->message);
+		//printf("Disconnection error: %s\n", error->message);
 		ret = -1;
 	}
 	g_object_unref(device);
@@ -1505,7 +1504,7 @@ int gattlib_get_connected_devices(gattlib_connected_device_t connected_device_cb
 			NULL, NULL, NULL, NULL,
 			&error);
 	if (device_manager == NULL) {
-		printf("Failed to get Bluez Device Manager.");
+		//printf("Failed to get Bluez Device Manager.");
 		return -1;
 	}
     /*get all objects i.e. devices objs*/
@@ -1561,7 +1560,7 @@ int gattlib_get_paired_devices(gattlib_paired_device_t paired_device_cb)
 			NULL, NULL, NULL, NULL,
 			&error);
 	if (device_manager == NULL) {
-		printf("Failed to get Bluez Device Manager.");
+		//printf("Failed to get Bluez Device Manager.");
 		return -1;
 	}
     /*get all objects i.e. devices objs*/
@@ -1628,7 +1627,7 @@ int is_dev_connected(char * adapter,char *address)
 
 	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
 	snprintf(dev_object_path, sizeof(dev_object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
-	printf("object path %s\n",dev_object_path);
+	//printf("object path %s\n",dev_object_path);
 	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
 					G_BUS_TYPE_SYSTEM,
 					G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
@@ -1638,13 +1637,13 @@ int is_dev_connected(char * adapter,char *address)
 					&error);
 	if(! device)
 	{
-		printf("getting adapter error: %s\n", error->message);
+		//printf("getting adapter error: %s\n", error->message);
 		return -1;
 	}
 
 	if(org_bluez_device1_get_connected(device) )
 	{
-		printf("Disconnected \n");
+		//printf("Disconnected \n");
 		ret = 0;
 	}
 	else
@@ -1680,7 +1679,7 @@ int is_dev_paired(char * adapter,char *address)
 
 	// Generate object path like: /org/bluez/hci0/dev_DA_94_40_95_E0_87
 	snprintf(dev_object_path, sizeof(dev_object_path), "/org/bluez/%s/dev_%s", adapter_name, device_address_str);
-	printf("object path %s\n",dev_object_path);
+	//printf("object path %s\n",dev_object_path);
 	OrgBluezDevice1* device = org_bluez_device1_proxy_new_for_bus_sync(
 					G_BUS_TYPE_SYSTEM,
 					G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE,
@@ -1690,7 +1689,7 @@ int is_dev_paired(char * adapter,char *address)
 					&error);
 	if(! device)
 	{
-		printf("getting device error: %s\n", error->message);
+		//printf("getting device error: %s\n", error->message);
 		return -1;
 	}
 
@@ -1717,7 +1716,7 @@ int is_dev_paired(char * adapter,char *address)
 			&error);
 	if(manager == NULL)
 	{
-		printf("agent manager error: %s\n", error->message);
+		//printf("agent manager error: %s\n", error->message);
 		return -1;
 	}else
 	{
