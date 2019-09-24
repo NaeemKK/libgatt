@@ -1,6 +1,6 @@
-Orignal Source code is taken from https://github.com/labapart/gattlib. It had too many issues and bugs. I have tried to resolve them and also added missing functionlaities like disconnection handler, pairing/unpairing info, RSSI info, removing device, getting list of paired/connected devices etc. 
+Orignal Source code is taken from Gattlib https://github.com/labapart/gattlib. It had too many issues and bugs. I have tried to resolve them and also added missing functionlaities like disconnection handler, pairing/unpairing info, RSSI info, removing device, getting list of paired/connected devices etc. 
 
-GattLib is a library used to access Generic Attribute Profile (GATT) protocol of BLE (Bluetooth Low Energy) devices.
+libgatt is a library used to access Generic Attribute Profile (GATT) protocol of BLE (Bluetooth Low Energy) devices.
 It has been introduced to allow to build applications that could easily communicate with BLE devices.
 
 It supports Bluez v4 and v5. On Bluez versions prior to v5.42, gattlib used Bluez source code while it uses D-Bus API 
@@ -11,22 +11,22 @@ mkdir build && cd build
 cmake -DGATTLIB_FORCE_DBUS=TRUE ..
 make
 ```
-Build GattLib
+Build libgatt
 =============
 
-* Gattlib requires the following packages: `libbluetooth-dev`, `libreadline-dev`.  
+* libgatt requires the following packages: `libbluetooth-dev`, `libreadline-dev`.  
 On Debian based system (such as Ubuntu), you can installed these packages with the
 following command: `sudo apt-install libbluetooth-dev libreadline-dev`
 
 ```
-cd <gattlib-src-root>
+cd <libgatt-src-root>
 mkdir build && cd build
 cmake ..
 make
 ```
 ### Cross-Compilation
 
-To cross-compile GattLib, you must provide the following environment variables:
+To cross-compile libgatt, you must provide the following environment variables:
 
 - `CROSS_COMPILE`: prefix of your cross-compile toolchain
 - `SYSROOT`: an existing system root that contains the libraries and include files required by your application
@@ -42,7 +42,7 @@ cmake ..
 make
 ```
 
-Package GattLib
+Package libgatt
 ===============
 
 From the build directory: `cpack ..`
@@ -59,4 +59,5 @@ TODO List
 
 - Alot of cleanup is required i.e. commented out code, extra spaces and unnecessary functions.
 - Undo changes made to examples for testing
+- change compile options to use name libgatt
 
